@@ -1,37 +1,9 @@
 application:
-  name: appwrite
+  name: appwrite-console
   pods:
-  - name: app
-    image: appwrite/appwrite:latest
-    path: /
-    servicePorts:
-    - 80
-    vars:
-      _APP_ENV: production
-      _APP_OPENSSL_KEY_V1: "your-secret-key-32-chars-exactly"
-      _APP_DOMAIN: relaxed-weasel-appwrite.cloud.nexlayer.ai
-      _APP_DOMAIN_TARGET: relaxed-weasel-appwrite.cloud.nexlayer.ai
-      _APP_DB_HOST: mariadb.pod
-      _APP_DB_PORT: "3306"
-      _APP_DB_USER: appwrite
-      _APP_DB_PASS: appwrite
-      _APP_DB_SCHEMA: appwrite
-      _APP_REDIS_HOST: redis.pod
-      _APP_REDIS_PORT: "6379"
-  - name: mariadb
-    image: mariadb:10.7
-    servicePorts:
-    - 3306
-    vars:
-      MYSQL_DATABASE: appwrite
-      MYSQL_USER: appwrite
-      MYSQL_PASSWORD: appwrite
-      MYSQL_ROOT_PASSWORD: rootpassword
-    volumes:
-    - name: appwrite-db
-      mountPath: /var/lib/mysql
-      size: 10Gi
-  - name: redis
-    image: redis:7-alpine
-    servicePorts:
-    - 6379
+    - name: app
+      image: "registry.nexlayer.io/user_01kece1xyh817dwff7wnarhkxd/appwrite:9f05a19-fix5"
+      path: /
+      servicePorts:
+        - 3000
+      vars: {}
