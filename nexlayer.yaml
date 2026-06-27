@@ -14,6 +14,11 @@ application:
       _APP_DOMAIN: relaxed-weasel-appwrite.cloud.nexlayer.ai
       _APP_DOMAIN_FUNCTIONS: relaxed-weasel-appwrite.cloud.nexlayer.ai
       _APP_DOMAIN_TARGET: relaxed-weasel-appwrite.cloud.nexlayer.ai
+      # _APP_ENV=production flips the image's router protection to "enabled",
+      # which 401s every request until the domain is registered as a custom
+      # project domain. Disable it so the console/API are reachable on the
+      # Nexlayer-assigned hostname.
+      _APP_OPTIONS_ROUTER_PROTECTION: disabled
       # Appwrite 1.9.x defaults _APP_DB_ADAPTER to "mongodb". Without this,
       # the server speaks the MongoDB wire protocol to MariaDB and crash-loops
       # with: "MongoDB connection failed: Could not read document from BSON reader".
