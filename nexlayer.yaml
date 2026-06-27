@@ -1,8 +1,9 @@
 application:
   name: appwrite
   pods:
-  # Appwrite server (PHP/Swoole). Serves the API AND the web console at "/".
-  # No separate console pod is needed — Appwrite ships the console in-image.
+  # Appwrite server (PHP/Swoole). Serves the REST API at /v1 and "/" (which
+  # 301-redirects to /console/). The console SPA itself is a SEPARATE image
+  # (appwrite/console) since Appwrite 1.6 — see the console pod below.
   - name: app
     image: appwrite/appwrite:latest
     path: /
@@ -59,3 +60,10 @@ application:
     image: redis:7-alpine
     servicePorts:
     - 6379
+  # Console SPA — separate image since Appwrite 1.6. Served at /console;
+  # it calls the REST API at /v1 on the same host.
+  - name: console
+    image: appwrite/console:8
+    path: /console
+    servicePorts:
+    - 80
