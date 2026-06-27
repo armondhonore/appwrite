@@ -1,9 +1,56 @@
 application:
-  name: appwrite-console
+  name: appwrite
   pods:
-    - name: app
-      image: "registry.nexlayer.io/user_01kece1xyh817dwff7wnarhkxd/appwrite:9f05a19-fix5"
-      path: /
-      servicePorts:
-        - 3000
-      vars: {}
+  # Appwrite server (PHP/Swoole). Serves the API AND the web console at "/".
+  # No separate console pod is needed — Appwrite ships the console in-image.
+  - name: app
+    image: appwrite/appwrite:latest
+    path: /
+    servicePorts:
+    - 80
+    vars:
+      _APP_ENV: production
+      _APP_OPENSSL_KEY_V1: "your-secret-key-32-chars-exactly"
+      _APP_DOMAIN: relaxed-weasel-appwrite.cloud.nexlayer.ai
+      _APP_DOMAIN_FUNCTIONS: relaxed-weasel-appwrite.cloud.nexlayer.ai
+      _APP_DOMAIN_TARGET: relaxed-weasel-appwrite.cloud.nexlayer.ai
+      # Appwrite 1.9.x defaults _APP_DB_ADAPTER to "mongodb". Without this,
+      # the server speaks the MongoDB wire protocol to MariaDB and crash-loops
+      # with: "MongoDB connection failed: Could not read document from BSON reader".
+      _APP_DB_ADAPTER: mariadb
+      # App-prefixed service name (shared namespace — "mariadb.pod" collides).
+      _APP_DB_HOST: appwrite-mariadb-service
+      _APP_DB_PORT: "3306"
+      _APP_DB_USER: appwrite
+      _APP_DB_PASS: appwrite
+      _APP_DB_SCHEMA: appwrite
+      # Logs DB shares the same MariaDB (boot creates the `logs` schema here).
+      _APP_CONNECTIONS_DB_LOGS: "db_main=mariadb://appwrite:appwrite@appwrite-mariadb-service:3306/appwrite"
+      _APP_REDIS_HOST: appwrite-redis-service
+      _APP_REDIS_PORT: "6379"
+    resources:
+      requests:
+        cpu: "250m"
+        memory: "512Mi"
+      limits:
+        cpu: "2"
+        memory: "2Gi"
+  - name: mariadb
+    image: mariadb:10.7
+    servicePorts:
+    - 3306
+    vars:
+      # Pinned literally here AND in the app pod so a redeploy cannot
+      # regenerate/desync the credential pair.
+      MYSQL_DATABASE: appwrite
+      MYSQL_USER: appwrite
+      MYSQL_PASSWORD: appwrite
+      MYSQL_ROOT_PASSWORD: rootpassword
+    volumes:
+    - name: appwrite-db
+      mountPath: /var/lib/mysql
+      size: 10Gi
+  - name: redis
+    image: redis:7-alpine
+    servicePorts:
+    - 6379
